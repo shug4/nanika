@@ -218,7 +218,18 @@ function downloadCsv(name, data) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
 }
-function build() { refreshSelectors(); buildRating(); randomizeScene(); }
+async function loadStimuliCsv() {
+    const res = await fetch("stimuli.csv");
+    const text = await res.text();
+    el("stimuliCsv").value = text.trim();
+}
+
+async function build() {
+    await loadStimuliCsv();
+    refreshSelectors();
+    buildRating();
+    randomizeScene();
+}
 
 el("reloadBtn").onclick = build;
 el("randomizeBtn").onclick = randomizeScene;
