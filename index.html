@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Comfort Resonance Map v21</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="left">
+      <h1>Comfort Resonance Map v21</h1>
+      <div class="muted">ポジティブ系の候補を広めに比較する版です。<br>自然系・褒めかわいい系に加えて、光開放系・生活ぬくさ系・夕方エモ系・発見知的快系・温泉系を入れています。</div>
+
+      <h2>表示設定</h2>
+      <div class="grid">
+        <div><label>提示モード</label><select id="mode">
+            <option value="randomGroup" selected>全cue群ランダム</option>
+            <option value="selectedFamily">選んだ系統内ランダム</option>
+            <option value="selectedGroup">選んだcue群のみ</option>
+          </select></div>
+        <div><label>系統</label><select id="family"></select></div>
+        <div class="full"><label>cue群</label><select id="group"></select></div>
+        <div><label>表示語数</label><select id="displayCount">
+            <option>8</option>
+            <option selected>12</option>
+            <option>16</option>
+            <option>20</option>
+            <option>32</option>
+          </select></div>
+        <div><label>密度</label><select id="density">
+            <option value="light">薄い</option>
+            <option value="normal" selected>普通</option>
+            <option value="dense">濃い</option>
+          </select></div>
+        <div><label>文字サイズ</label><input type="range" id="fontScale" min=".5" max="2.2" step=".05" value="1.05">
+          <div class="muted" id="fontLabel">1.05x</div>
+        </div>
+        <div><label>漂い</label><input type="range" id="driftScale" min="0" max="2" step=".05" value=".85">
+          <div class="muted" id="driftLabel">0.85x</div>
+        </div>
+        <div><label>閲覧環境</label><select id="viewContext">
+            <option value="laptop" selected>laptop</option>
+            <option value="external_display">external_display</option>
+            <option value="phone_like">phone_like</option>
+          </select></div>
+        <div><label>気分メモ</label><select id="moodContext">
+            <option value="neutral" selected>neutral</option>
+            <option value="tired">tired</option>
+            <option value="good">good</option>
+            <option value="restless">restless</option>
+          </select></div>
+      </div>
+
+      <h2>カスタム語</h2>
+      <textarea id="customWords" placeholder="効きそうな単語を1行ずつ"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="addCustomWarm">生活ぬくさへ追加</button>
+        <button class="secondary" id="addCustomNature">自然系へ追加</button>
+        <button class="secondary" id="addCustomPraise">褒めかわいい系へ追加</button>
+      </div>
+
+      <h2>刺激CSV</h2>
+
+      <textarea id="stimuliCsv" placeholder="刺激CSVを読み込み中..."></textarea>
+
+      <div class="row" style="margin-top:8px">
+        <button id="reloadBtn">CSV反映</button>
+        <button class="secondary" id="downloadStimuli">刺激CSV保存</button>
+      </div>
+
+      <h2>キー</h2>
+      <div class="muted">
+        W / R: 次の提示<br>
+        1〜5: 心地よさを評価して次へ<br>
+        Shift + 1〜5: 勝手に入ってくる感じだけ評価<br>
+        ↑ / ←: 前の cue群<br>
+        ↓ / →: 次の cue群<br>
+        F: 文字だけ表示<br>
+        S: 保存だけ
+      </div>
+    </aside>
+
+    <main class="stage">
+      <div class="stageInfo">
+        <div id="leftInfo"></div>
+        <div id="rightInfo"></div>
+      </div>
+      <div id="field" class="field"></div>
+    </main>
+
+    <aside class="right">
+      <h2>現在</h2>
+      <div id="meta" class="muted"></div>
+      <div id="tokens" class="tokens"></div>
+
+      <h2>心地よさ</h2>
+      <div id="comfortRating" class="rating"></div>
+      <div class="muted" style="margin-top:6px">1 = 低い / 5 = 高い。押すと記録して次へ。</div>
+
+      <h2>勝手に入ってくる感じ</h2>
+      <div id="recallRating" class="rating"></div>
+      <div class="muted" style="margin-top:6px">読む前に、勝手に身体に入る感じ。</div>
+
+      <h2>どんなポジティブか</h2>
+      <div id="feelTags" class="tagBtns">
+        <button data-tag="対人的にうれしい">対人的にうれしい</button>
+        <button data-tag="自然に落ち着く">自然に落ち着く</button>
+        <button data-tag="かわいい/やわらかい">かわいい/やわらかい</button>
+        <button data-tag="エモい余韻">エモい余韻</button>
+        <button data-tag="生活のぬくさ">生活のぬくさ</button>
+        <button data-tag="開ける/軽い">開ける/軽い</button>
+        <button data-tag="知的におもろい">知的におもろい</button>
+        <button data-tag="温泉っぽい">温泉っぽい</button>
+        <button data-tag="よくわからない">よくわからない</button>
+        <button data-tag="なし">なし</button>
+      </div>
+
+      <h2>保存</h2>
+      <div class="row">
+        <button id="saveSceneBtn">保存だけする</button>
+        <button class="secondary" id="clearSavedBtn">保存を全消去</button>
+      </div>
+
+      <h2>進捗</h2>
+      <div class="stat"><span>評価数</span><span id="ratedCount" class="badge"></span></div>
+      <div class="stat"><span>保存数</span><span id="savedCount" class="badge"></span></div>
+      <div class="stat"><span>cue群数</span><span id="groupCount" class="badge"></span></div>
+
+      <h2>傾向</h2>
+      <div id="summary" class="summary"></div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="downloadRatings">評価CSV</button>
+        <button class="secondary" id="copySummary">傾向コピー</button>
+      </div>
+    </aside>
+
+    <div class="bottom">
+      <div class="row">
+        <button id="randomizeBtn">ランダム提示</button>
+        <button id="focusBtn" class="secondary">文字だけ</button>
+      </div>
+      <div id="timeline" class="timeline"></div>
+      <div class="muted">map of positive resonance cues</div>
+    </div>
+  </div>
+
+
+</body>
+
+</html>
